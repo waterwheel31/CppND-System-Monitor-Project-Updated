@@ -3,6 +3,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <iostream>
 
 #include "format.h"
 #include "ncurses_display.h"
@@ -48,7 +49,8 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
       window, ++row, 2,
       ("Running Processes: " + to_string(system.RunningProcesses())).c_str());
   mvwprintw(window, ++row, 2,
-            ("Up Time: " + Format::ElapsedTime(system.UpTime())).c_str());
+      ("Up Time: " + Format::ElapsedTime(system.UpTime())).c_str());
+       
   wrefresh(window);
 }
 
@@ -99,7 +101,9 @@ void NCursesDisplay::Display(System& system, int n) {
     box(system_window, 0, 0);
     box(process_window, 0, 0);
     DisplaySystem(system, system_window);
+    // std::cout << "\nprocesses:" << "\n";
     DisplayProcesses(system.Processes(), process_window, n);
+    
     wrefresh(system_window);
     wrefresh(process_window);
     refresh();
