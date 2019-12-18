@@ -48,7 +48,6 @@ string LinuxParser::Kernel() {
   return kernel;
 }
 
-// BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
   DIR* directory = opendir(kProcDirectory.c_str());
@@ -74,7 +73,6 @@ float LinuxParser::MemoryUtilization() { return 0.0; }
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { 
   
-  
   string uptime, line; 
   
   string path =  kProcDirectory + "/uptime";
@@ -86,7 +84,6 @@ long LinuxParser::UpTime() {
       linestream >> uptime;
     }
   }
-  
   return std::stol(uptime); 
 
 }
@@ -95,7 +92,6 @@ long LinuxParser::UpTime() {
 long LinuxParser::Jiffies() { return 0; }
 
 // TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
 
 // TODO: Read and return the number of active jiffies for the system
@@ -122,12 +118,25 @@ int LinuxParser::RunningProcesses() {
   vector<int> idVec = LinuxParser::Pids() ;
   vector<int> idVec_running; 
 
+  
   for (int pid: idVec){
      int memory_usage = std::stoi(LinuxParser::Ram(pid));
      if (memory_usage >0){
        idVec_running.push_back(pid);
      }
   }
+  
+
+  /*
+  for (int pid: idVec){
+     float cpu_utilizaiton = LinuxParser::CpuUtilization(pid);
+     if (cpu_utilizaiton >0.01){
+       idVec_running.push_back(pid);
+     }
+  }
+  */
+
+
 
   int numProcess_running = idVec_running.size();
 
@@ -135,7 +144,6 @@ int LinuxParser::RunningProcesses() {
 }
 
 // TODO: Read and return the command associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid) { 
   
   string cmd = "n.a."; 
@@ -154,7 +162,6 @@ string LinuxParser::Command(int pid) {
 }
 
 // TODO: Read and return the memory used by a process
-// REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Ram(int pid) { 
   
   string line;
@@ -180,7 +187,6 @@ string LinuxParser::Ram(int pid) {
  }
 
 // TODO: Read and return the user ID associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Uid(int pid) { 
   
   string line;
@@ -204,7 +210,6 @@ string LinuxParser::Uid(int pid) {
 }
 
 // TODO: Read and return the user associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::User(int pid) { 
   
   string uid = LinuxParser::Uid(pid); 
@@ -232,7 +237,6 @@ string LinuxParser::User(int pid) {
 
 
 // TODO: Read and return the uptime of a process
-// REMOVE: [[maybe_unused]] once you define the function
 long int LinuxParser::UpTime(int pid) { 
   
   //std::cout <<"pid:" << pid << "\n"; 
@@ -240,18 +244,56 @@ long int LinuxParser::UpTime(int pid) {
   string v;
   string path =  kProcDirectory + "/" + std::to_string(pid) + "/stat";
 
+  long int uptime, starttime;
+
   std::ifstream filestream(path);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
-      linestream >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v >> v;
-      //std::cout << "value:" << v <<"\n"; 
+      for (int i=0; i<22; i++){
+        linestream >> v;
+      }
+     
       if (std::all_of(v.begin(), v.end(), isdigit)) {
-        return std::stol(v)/sysconf(_SC_CLK_TCK);
-        
+        starttime = std::stol(v)/sysconf(_SC_CLK_TCK);
       }
     }
   }
-  return 0;
+
+  uptime = LinuxParser::UpTime();
+
+  return uptime - starttime;
   
+}
+
+
+float LinuxParser::CpuUtilization(int pid){
+
+  string line;
+  string v;
+  string path =  kProcDirectory + "/" + std::to_string(pid) + "/stat";
+
+  float cpuTime;
+
+  std::ifstream filestream(path);
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
+      std::istringstream linestream(line);
+      for (int i=0; i<22; i++){
+        linestream >> v;
+        if (i==13 || i==14 ||  i==15 || i==16){
+          cpuTime += std::stof(v);
+        }
+      }    
+    }
+  }
+
+  float  processUptime = LinuxParser::UpTime();
+  cpuTime /= sysconf(_SC_CLK_TCK);
+
+  float utilization = cpuTime / processUptime; 
+
+  //std::cout << "cpuTime:" << cpuTime <<  " utilization: " << utilization << "\n";
+  return utilization;
+
 }

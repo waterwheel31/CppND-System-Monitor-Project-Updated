@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <typeinfo>
+#include <algorithm>    // std::reverse
 
 
 #include "process.h"
@@ -109,5 +110,10 @@ vector<Process>& System::Processes() {
             processes_.push_back(pro);
         }
     } 
+
+    std::sort(processes_.begin(), processes_.end());
+    std::reverse(processes_.begin(), processes_.end());
+
+    
 
     return processes_; }
