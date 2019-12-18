@@ -103,17 +103,20 @@ vector<Process>& System::Processes() {
     
     vector<int> idVec = LinuxParser::Pids() ;
 
+    vector<Process> processes_tmp;
+
     for (int pid : idVec){
         Process pro(pid);
         int memory_usage = std::stoi(LinuxParser::Ram(pid));
         if (memory_usage >0){
-            processes_.push_back(pro);
+            processes_tmp.push_back(pro);
         }
     } 
+
+    processes_ = processes_tmp;
 
     std::sort(processes_.begin(), processes_.end());
     std::reverse(processes_.begin(), processes_.end());
 
     
-
     return processes_; }
