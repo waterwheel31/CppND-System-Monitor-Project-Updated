@@ -38,7 +38,7 @@ float Processor::Utilization() {
     // std::cout << "num_of_cores:" << num_of_cores << "\n"; 
 
 
-    utilization = (uptime  * num_of_cores - idletime) / uptime * num_of_cores; 
+    utilization = (uptime  * num_of_cores - idletime) / (uptime * num_of_cores); 
     // std::cout <<"uptime: " <<uptime <<  " idletime: " << idletime << " utilization:" <<utilization << "\n";
     
     return utilization; 
